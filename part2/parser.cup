@@ -33,15 +33,14 @@ non terminal String     decl, args, args2, body, parms, param, rpar;
  *  Precedence Declarations
  */
 
-precedence right COMMA;
-precedence left IDENTIFIER;
+precedence left COMMA;
+
 /**
  *  The Grammar Rules
  */
 
 program ::= decl:d{:
-			System.out.println("import java.lang.Math;\n");
-			System.out.println("public class Main {");
+			System.out.println("\n\npublic class Main {");
 			System.out.printf("%s", d);
 			System.out.println("}");
 			 :}
@@ -60,7 +59,8 @@ expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = String.format("%s + %s",
              ;*/
 
 calls   ::= IDENTIFIER:fun LPAREN parms:p RPAREN calls:b                    {:RESULT = String.format("\tSystem.out.println(%s(%s));\n%s",fun,p,b);:}
-         |  expr:e calls:b                                                  {:RESULT = String.format("\tSystem.out.println(%s)%s;",e,b);:}
+         |  expr:e calls:b                                                  {:RESULT = String.format("\tSystem.out.println(%s);\n%s;",e,b);:}
+         |  term:e calls:b                                                  {:RESULT = String.format("\tSystem.out.println(%s);\n%s;",e,b);:}
          |                                                                  {:RESULT = String.format(" ");:}
          ;
 

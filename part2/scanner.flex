@@ -71,6 +71,7 @@ Paragk = [')']{WhiteSpace}['{'] | "){"
 
 <YYINITIAL> {
 /* operators */
+ ","            { return symbol(sym.COMMA); }
  {Paragk}       { return symbol(sym.PARAGK);}
  "+"            { return symbol(sym.PLUS); }
  "{"            { return symbol(sym.LAGK); }
@@ -84,7 +85,6 @@ Paragk = [')']{WhiteSpace}['{'] | "){"
  {Identifier}   { return symbol(sym.IDENTIFIER, new String(yytext())); }
  \"             { stringBuffer.setLength(0); yybegin(STRING); }
  {WhiteSpace}   { /* just skip what was found, do nothing */ }
- ","            { return symbol(sym.COMMA); }
 }
 
 <STRING> {
