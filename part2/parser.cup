@@ -1,0 +1,118 @@
+/* Simple +/-/* expression language; parser evaluates constant expressions on the fly*/
+/**
+ *  Package and Import Specifications
+ */
+import java_cup.runtime.*;
+
+/**
+ *  Usercode Components
+ */
+parser code {:
+    // Connect this parser to a scanner!
+    Scanner s;
+    Parser(Scanner s){ this.s=s; }
+:}
+
+/* define how to connect to the scanner! */
+scan with {: return s.next_token(); :};
+
+/**
+ *  Symbol Lists
+ */
+
+/* Terminals (tokens returned by the scanner). */
+terminal            PLUS, LPAREN, RPAREN, IF, ELSE, PREFIX, SUFFIX;
+terminal            LAGK, RAGK, COMMA, PARAGK;
+terminal String     STRING_LITERAL, IDENTIFIER;
+
+/*  Non terminals */
+non terminal            program;
+non terminal String     expr, term, term2, cond, cont, calls, sterm;      // used to store evaluated subexpressions
+non terminal String     decl, args, args2, body, parms, param, rpar;
+/**
+ *  Precedence Declarations
+ */
+
+precedence right COMMA;
+precedence left IDENTIFIER;
+/**
+ *  The Grammar Rules
+ */
+
+program ::= decl:d{:
+			System.out.println("import java.lang.Math;\n");
+			System.out.println("public class Main {");
+			System.out.printf("%s", d);
+			System.out.println("}");
+			 :}
+	;
+
+/*
+expr_list ::= expr_list:rest expr:e SEMI    {: RESULT = String.format("%s\t\tSystem.out.println(%s);\n", rest, e); :}
+            |                               {: RESULT = ""; :}
+            ;
+expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = String.format("%s + %s", e1, e2); :}
+             | expr:e1 MINUS expr:e2        {: RESULT = String.format("%s - %s", e1, e2); :}
+             | expr:e1 EXP expr:e2          {: RESULT = String.format("(int)Math.pow(%s, %s)", e1, e2); :}
+             | LPAREN expr:e RPAREN         {: RESULT = String.format("(%s)", e); :}
+             | NUMBER:n                     {: RESULT = String.format("%d", n); :}
+             | STRING_LITERAL:s             {: RESULT = String.format("Integer.parseInt(\"%s\", 16)", s); :}  
+             ;*/
+
+calls   ::= IDENTIFIER:fun LPAREN parms:p RPAREN calls:b                    {:RESULT = String.format("\tSystem.out.println(%s(%s));\n%s",fun,p,b);:}
+         |  expr:e calls:b                                                  {:RESULT = String.format("\tSystem.out.println(%s)%s;",e,b);:}
+         |                                                                  {:RESULT = String.format(" ");:}
+         ;
+
+parms   ::= param:p rpar:r                                                  {:RESULT = String.format(" %s%s",p,r);:}
+         |                                                                  {:RESULT = String.format(" ");:}
+         ;
+
+rpar    ::= COMMA param:p rpar:r                                            {:RESULT = String.format(", %s%s",p,r);:}
+         |                                                                  {:RESULT = String.format(" ");:}
+         ;
+
+param   ::= IDENTIFIER:fun LPAREN parms:p RPAREN                            {:RESULT = String.format("%s(%s)",fun,p);:}
+         | IDENTIFIER:id                                                    {:RESULT = String.format("%s",id);:}
+         | STRING_LITERAL:s                                                 {:RESULT = String.format("\"%s\"",s);:}
+         ;
+
+
+decl  ::= IDENTIFIER:name LPAREN args:a PARAGK body:b RAGK  decl:d          {:RESULT = String.format("%s\n\npublic static String %s ( %s){\n\t%s\n}", d, name, a, b);:}
+        | calls:c                                                           {:RESULT = String.format("\tpublic static void main(String[] args) {\n\t\t%s\n}\n",c);:}
+        ;
+
+args  ::= IDENTIFIER:id args2:rest                                          {:RESULT = String.format("String %s%s",id,rest);:}                                               
+        |                                                                   {:RESULT = String.format(" ");:}  
+        ;
+
+args2 ::= COMMA IDENTIFIER:id args2:rest                                    {:RESULT = String.format(", String %s%s",id,rest);:}  
+        |                                                                   {:RESULT = String.format(" ");:}  
+        ;
+
+body  ::= term:b                                                            {: RESULT = String.format("\treturn (%s);\n",b);:} 
+        | expr:b                                                            {: RESULT = String.format("\treturn (%s);\n",b);:} 
+        ;
+
+cont  ::= expr:e                                                            {: RESULT=String.format("%s", e); :}
+        | term:t                                                            {: RESULT=String.format("%s", t); :}
+        ;
+
+expr  ::= IF LPAREN cond:c RPAREN cont:s ELSE cont:s2                       {: RESULT = String.format("%s ? %s : %s", c, s, s2); :}
+        ;
+
+cond  ::= sterm:t1 PREFIX sterm:t2                                          {:RESULT=String.format("%s.startsWith(%s)", t1, t2);:}
+        | sterm:t1 SUFFIX sterm:t2                                          {:RESULT=String.format("%s.endsWith(%s)", t1, t2);:}
+        ;
+
+sterm ::= term:t                                                            {: RESULT=String.format("%s", t); :}
+        | expr:e                                                            {: RESULT=String.format("%s", e); :}
+        ;
+
+term  ::= term2:t1 PLUS term:t2                                             {:RESULT=String.format("(%s + %s)", t1, t2);:}
+        | term2:t1                                                          {:RESULT=String.format("%s", t1);:}
+        ;
+
+term2 ::= IDENTIFIER:id                                                     {: RESULT=String.format("%s", id); :}
+        | STRING_LITERAL:s                                                  {: RESULT=String.format("\"%s\"", s); :}
+        ;
