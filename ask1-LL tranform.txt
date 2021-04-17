@@ -1,0 +1,40 @@
+
+EXP -> TERM EXP'.
+
+EXP' -> EXP1
+     | ** EXP2 EXP1.
+
+TERM -> NUM
+     |  ( NUM EXP1 ).
+
+EXP1 -> + EXP2 EXP1
+     |  _ EXP2 EXP1
+     |.
+
+EXP2 -> TERM EXP3.
+
+EXP3 -> ** EXP2
+     |.
+
+NUM -> 0 NUM2 
+      |1 NUM2 
+      |2 NUM2 
+      |3 NUM2 
+      |4 NUM2 
+      |5 NUM2 
+      |6 NUM2 
+      |7 NUM2 
+      |8 NUM2 
+      |9 NUM2.
+ 
+NUM2 -> 0  
+      |1 NUM2 
+      |2 NUM2 
+      |3 NUM2 
+      |4 NUM2 
+      |5 NUM2 
+      |6 NUM2 
+      |7 NUM2 
+      |8 NUM2 
+      |9 NUM2 
+      | .
