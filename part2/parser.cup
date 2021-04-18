@@ -58,8 +58,7 @@ expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = String.format("%s + %s",
              | STRING_LITERAL:s             {: RESULT = String.format("Integer.parseInt(\"%s\", 16)", s); :}  
              ;*/
 
-calls   ::= IDENTIFIER:fun LPAREN parms:p RPAREN calls:b                    {:RESULT = String.format("\tSystem.out.println(%s(%s));\n%s",fun,p,b);:}
-         |  expr:e calls:b                                                  {:RESULT = String.format("\tSystem.out.println(%s);\n%s;",e,b);:}
+calls   ::= expr:e calls:b                                                  {:RESULT = String.format("\tSystem.out.println(%s);\n%s;",e,b);:}
          |  term:e calls:b                                                  {:RESULT = String.format("\tSystem.out.println(%s);\n%s;",e,b);:}
          |                                                                  {:RESULT = String.format(" ");:}
          ;
@@ -98,11 +97,11 @@ cont  ::= expr:e                                                            {: R
         | term:t                                                            {: RESULT=String.format("%s", t); :}
         ;
 
-expr  ::= IF LPAREN cond:c RPAREN cont:s ELSE cont:s2                       {: RESULT = String.format("%s ? %s : %s", c, s, s2); :}
+expr  ::= IF LPAREN cond:c RPAREN cont:s ELSE cont:s2                       {: RESULT = String.format("(%s ? %s : %s)", c, s, s2); :}
         ;
 
-cond  ::= sterm:t1 PREFIX sterm:t2                                          {:RESULT=String.format("%s.startsWith(%s)", t1, t2);:}
-        | sterm:t1 SUFFIX sterm:t2                                          {:RESULT=String.format("%s.endsWith(%s)", t1, t2);:}
+cond  ::= sterm:t1 PREFIX sterm:t2                                          {:RESULT=String.format("%s.startsWith(%s)", t2, t1);:}
+        | sterm:t1 SUFFIX sterm:t2                                          {:RESULT=String.format("%s.endsWith(%s)", t2, t1);:}
         ;
 
 sterm ::= term:t                                                            {: RESULT=String.format("%s", t); :}
@@ -115,4 +114,5 @@ term  ::= term2:t1 PLUS term:t2                                             {:RE
 
 term2 ::= IDENTIFIER:id                                                     {: RESULT=String.format("%s", id); :}
         | STRING_LITERAL:s                                                  {: RESULT=String.format("\"%s\"", s); :}
+        | IDENTIFIER:fun LPAREN parms:p RPAREN                              {:RESULT = String.format("%s(%s)",fun,p);:}
         ;
