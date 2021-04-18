@@ -74,7 +74,6 @@ Paragk = [')']{WhiteSpace}['{'] | "){"
  ","            { return symbol(sym.COMMA); }
  {Paragk}       { return symbol(sym.PARAGK);}
  "+"            { return symbol(sym.PLUS); }
- "{"            { return symbol(sym.LAGK); }
  "}"            { return symbol(sym.RAGK); }
  "("            { return symbol(sym.LPAREN); }
  ")"            { return symbol(sym.RPAREN); }

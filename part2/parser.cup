@@ -22,18 +22,19 @@ scan with {: return s.next_token(); :};
 
 /* Terminals (tokens returned by the scanner). */
 terminal            PLUS, LPAREN, RPAREN, IF, ELSE, PREFIX, SUFFIX;
-terminal            LAGK, RAGK, COMMA, PARAGK;
+terminal            RAGK, COMMA, PARAGK;
 terminal String     STRING_LITERAL, IDENTIFIER;
 
 /*  Non terminals */
 non terminal            program;
 non terminal String     expr, term, term2, cond, cont, calls, sterm;      // used to store evaluated subexpressions
-non terminal String     decl, args, args2, body, parms, param, rpar;
+non terminal String     decl, args, args2, body, parms, rpar;
 /**
  *  Precedence Declarations
  */
 
 precedence left COMMA;
+precedence right PLUS;
 
 /**
  *  The Grammar Rules
@@ -58,22 +59,16 @@ expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = String.format("%s + %s",
              | STRING_LITERAL:s             {: RESULT = String.format("Integer.parseInt(\"%s\", 16)", s); :}  
              ;*/
 
-calls   ::= expr:e calls:b                                                  {:RESULT = String.format("\tSystem.out.println(%s);\n%s;",e,b);:}
-         |  term:e calls:b                                                  {:RESULT = String.format("\tSystem.out.println(%s);\n%s;",e,b);:}
+calls   ::= term:e calls:b                                                  {:RESULT = String.format("\tSystem.out.println(%s);\n%s;",e,b);:}
          |                                                                  {:RESULT = String.format(" ");:}
          ;
 
-parms   ::= param:p rpar:r                                                  {:RESULT = String.format(" %s%s",p,r);:}
+parms   ::= term:p rpar:r                                                  {:RESULT = String.format(" %s%s",p,r);:}
          |                                                                  {:RESULT = String.format(" ");:}
          ;
 
-rpar    ::= COMMA param:p rpar:r                                            {:RESULT = String.format(", %s%s",p,r);:}
+rpar    ::= COMMA term:p rpar:r                                            {:RESULT = String.format(", %s%s",p,r);:}
          |                                                                  {:RESULT = String.format(" ");:}
-         ;
-
-param   ::= IDENTIFIER:fun LPAREN parms:p RPAREN                            {:RESULT = String.format("%s(%s)",fun,p);:}
-         | IDENTIFIER:id                                                    {:RESULT = String.format("%s",id);:}
-         | STRING_LITERAL:s                                                 {:RESULT = String.format("\"%s\"",s);:}
          ;
 
 
@@ -90,11 +85,9 @@ args2 ::= COMMA IDENTIFIER:id args2:rest                                    {:RE
         ;
 
 body  ::= term:b                                                            {: RESULT = String.format("\treturn (%s);\n",b);:} 
-        | expr:b                                                            {: RESULT = String.format("\treturn (%s);\n",b);:} 
         ;
 
-cont  ::= expr:e                                                            {: RESULT=String.format("%s", e); :}
-        | term:t                                                            {: RESULT=String.format("%s", t); :}
+cont  ::= term:t                                                            {: RESULT=String.format("%s", t); :}
         ;
 
 expr  ::= IF LPAREN cond:c RPAREN cont:s ELSE cont:s2                       {: RESULT = String.format("(%s ? %s : %s)", c, s, s2); :}
@@ -105,7 +98,6 @@ cond  ::= sterm:t1 PREFIX sterm:t2                                          {:RE
         ;
 
 sterm ::= term:t                                                            {: RESULT=String.format("%s", t); :}
-        | expr:e                                                            {: RESULT=String.format("%s", e); :}
         ;
 
 term  ::= term2:t1 PLUS term:t2                                             {:RESULT=String.format("(%s + %s)", t1, t2);:}
@@ -115,4 +107,5 @@ term  ::= term2:t1 PLUS term:t2                                             {:RE
 term2 ::= IDENTIFIER:id                                                     {: RESULT=String.format("%s", id); :}
         | STRING_LITERAL:s                                                  {: RESULT=String.format("\"%s\"", s); :}
         | IDENTIFIER:fun LPAREN parms:p RPAREN                              {:RESULT = String.format("%s(%s)",fun,p);:}
+        | expr:e                                                            {: RESULT=String.format("%s", e); :}
         ;
